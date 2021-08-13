@@ -33,7 +33,6 @@ public class ZYSign extends AbstractJni {
     private final Module module;
     private final String dirPath = "src/main/resources/demo_resources";
 
-
     public ZYSign() {
         emulator = AndroidEmulatorBuilder.for32Bit().setProcessName("com.zy.sign").build();     // 创建模拟器
         final Memory memory = emulator.getMemory();  // 模拟器的内存操作接口

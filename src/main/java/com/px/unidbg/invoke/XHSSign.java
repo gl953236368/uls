@@ -273,7 +273,7 @@ public class XHSSign extends AbstractJni{
 
 
     public String main(String deviceID, String main_hmac, String absoluteUrl, Map<String,String>headerMap) {
-        long bgTime = System.currentTimeMillis() / 1000;
+//        long bgTime = System.currentTimeMillis() / 1000;
         // 生成参数
         request = new Request.Builder()
                 .url(absoluteUrl)
@@ -287,7 +287,7 @@ public class XHSSign extends AbstractJni{
         long ptr = callInitialize();
         String result = callInterceptor(ptr);
 
-        System.out.println("耗时："+(System.currentTimeMillis() / 1000 - bgTime));
+//        System.out.println("耗时："+(System.currentTimeMillis() / 1000 - bgTime));
 
         return result;
     }
