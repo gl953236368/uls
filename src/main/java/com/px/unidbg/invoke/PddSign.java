@@ -91,7 +91,6 @@ public class PddSign extends AbstractJni {
             case "android/provider/Settings$Secure->getString(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;":{
                 // 获取 android_id为key的值 查询 android——id的值可以为空
                 String arg = (String) vaList.getObjectArg(1).getValue();
-                System.out.println("arg:"+arg);
                 return new StringObject(vm, "");
             }
             case "java/util/UUID->randomUUID()Ljava/util/UUID;":{
@@ -144,7 +143,6 @@ public class PddSign extends AbstractJni {
             case "android/content/Context->getSystemService(Ljava/lang/String;)Ljava/lang/Object;":{
                 // 入参为 phone 返回为android.telephony.TelephonyManager对象
                 String arg = (String) varArg.getObjectArg(0).getValue();
-                System.out.println("arg1:"+arg);
                 // newObject中填入signature是为了做对象之间的区分，和代码逻辑无关
                 return vm.resolveClass("android/telephony/TelephonyManager").newObject(signature);
             }
