@@ -21,6 +21,12 @@ import java.util.zip.GZIPOutputStream;
 
 @Component
 public class PddSign extends AbstractJni {
+    /**
+     * Template: 拼多多 5.72.apk  -> getInfo2()
+     * Content: 涉及 lib依赖 以及 调用堆栈的补充（方法未调用前就需要补充很多环境 且 unidbg异常）
+     * Method: unidbg补充非内置lib包(自写lib包引入) 以及 结合jnitrace 对指定参数进行补充 调用堆栈的环境补法
+     * Algorithm: 暂无
+     */
     //    com.xunmeng.pinduoduo
     private final AndroidEmulator emulator;
     private final VM vm;

@@ -22,6 +22,12 @@ import java.util.List;
 
 @Component
 public class ZYSign extends AbstractJni {
+    /**
+     * Template: 最右 573.apk  -> sign()
+     * Content: 存在前置函数，补环境，记录unidbg主动调用native方法
+     * Method: unidbg补充环境
+     * Algorithm: md5加密 只修改了魔值
+     */
     private final AndroidEmulator emulator;
     private final VM vm;
     private final Module module;

@@ -1,8 +1,11 @@
 package com.px.unidbg.controller;
 
+import com.px.unidbg.model.XHSRequestModel;
 import com.px.unidbg.service.XHSService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -15,7 +18,7 @@ public class XHSController {
     @Autowired
     XHSService xhsService;
 
-    @RequestMapping("/sign")
+    @RequestMapping("/sign1")
     public String getSign(){
         String deviceID = "2767123a-be20-3e78-826b-6fe73a67873a";
         String main_hmac = "e/KPYQSKawEXKut74v5bqQpGm7f5RqkAC5P90JG7IuTIZ6/j1tSpacDPqF72nYPTkZ3K3BaBq49ZZgSqOoaGeZ8D+c4I7GpKFXue1PggxaK8xXzIVXhMnpDM+QiUQiqX";
@@ -26,5 +29,15 @@ public class XHSController {
         headerMap.put("xy-common-params", xyParams);
         headerMap.put("user-agent", "Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 6P Build/MTC20L) Resolution/1440*2560 Version/6.97.0.1 Build/6970181 Device/(Huawei;Nexus 6P) discover/6.97.0.1 NetType/WiFi");
         return xhsService.getSign(deviceID, main_hmac, absoluteUrl,headerMap);
+    }
+
+    @RequestMapping(value = "/sign", method = {RequestMethod.POST})
+    public String getSignByParams(@RequestBody XHSRequestModel xhsRequestModel){
+        // 参数请求
+        Map<String, String> headerMap = new HashMap<>();
+        headerMap.put("x-b3-traceid", xhsRequestModel.getxTraceid());  // 固定
+        headerMap.put("xy-common-params", xhsRequestModel.getXyParams());
+        headerMap.put("user-agent", xhsRequestModel.getUserAgent());
+        return xhsService.getSign(xhsRequestModel.getDeviceID(), xhsRequestModel.getMain_hmac(), xhsRequestModel.getAbsoluteUrl(),headerMap);
     }
 }
