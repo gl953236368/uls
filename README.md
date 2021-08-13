@@ -3,7 +3,7 @@ unidbg-local-server：web接口服务
 # uindbg-local-server
 * 标准mvc项目
 * unidbg+springboot项目
-* 部分app接口调用接口服务
+* 部分app参数生成服务
 * unidbg练手项目
 
 # appList
