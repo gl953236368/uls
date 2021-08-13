@@ -1,19 +1,20 @@
 package com.px.unidbg.controller;
 
-import com.px.unidbg.service.PddService;
+import com.px.unidbg.service.XCService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("pdd")
-public class PddController {
-
+@RequestMapping("/xc")
+public class XCController {
     @Autowired
-    PddService pddService;
+    XCService xcService;
 
     @RequestMapping("/sign")
     public String getSign(){
-        return pddService.getSign();
+        String str1 = "7be9f13e7f5426d139cb4e5dbb1fdba7";
+        String str2 = "getdata";
+        return xcService.getSign(str1, str2);
     }
 }

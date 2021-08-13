@@ -26,6 +26,12 @@ import java.util.Map;
 
 @Component
 public class XHSSign extends AbstractJni{
+    /**
+     * Template: 小红书 6.97.01.apk  -> okhttp3.interceptor
+     * Content: 主要填补环境，需要部分来自手机 文件s.xml的值
+     * Method: unidbg补充环境
+     * Algorithm: md5魔改
+     */
     private final AndroidEmulator androidEmulator;
     private final VM vm;
     private final Module module;
