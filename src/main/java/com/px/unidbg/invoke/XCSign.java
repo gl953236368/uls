@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 public class XCSign extends AbstractJni implements IOResolver {
     /**
      * Template: 携程 8.38.2.apk  -> SimpleSign()
@@ -56,6 +55,8 @@ public class XCSign extends AbstractJni implements IOResolver {
         dm.callJNI_OnLoad(emulator);
     }
     public String callSimpleSign(String str1, String str2){
+        // eg.  str1 = "7be9f13e7f5426d139cb4e5dbb1fdba7";
+        //      str2 = "getdata";
         // 参数1字节数组 参数2固定 getdata
         List<Object> list = new ArrayList<>();
         list.add(vm.getJNIEnv());

@@ -24,7 +24,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
 <!--            <exclusions>-->
-<!--                &lt;!&ndash; 排除自带的logback依赖  狂打日志&ndash;&gt;-->
+<!--                &lt;!&ndash; 排除自带的logback依赖  避免单个调试unidbg组件 狂打日志&ndash;&gt;-->
 <!--                <exclusion>-->
 <!--                    <groupId>org.springframework.boot</groupId>-->
 <!--                    <artifactId>spring-boot-starter-logging</artifactId>-->
