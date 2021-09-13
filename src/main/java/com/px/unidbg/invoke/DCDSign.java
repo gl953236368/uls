@@ -10,21 +10,30 @@ import com.github.unidbg.memory.Memory;
 import com.github.unidbg.pointer.UnidbgPointer;
 import com.github.unidbg.utils.Inspector;
 import com.sun.jna.Pointer;
+
+
+
 import keystone.Keystone;
 import keystone.KeystoneArchitecture;
 import keystone.KeystoneEncoded;
 import keystone.KeystoneMode;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import java.util.Base64;
 import java.util.List;
 
 public class DCDSign extends AbstractJni {
     private final AndroidEmulator emulator;
     private final VM vm;
     private final Module module;
-    private File dirPath = new File("");
+    private final File dirPath = new File("");
     int mErrorCode;
 
     DCDSign(){
@@ -71,9 +80,9 @@ public class DCDSign extends AbstractJni {
 
     public void tfccEncrypt(){
         List<Object> list = new ArrayList<>(10);
-        int number = 85; // 和解码一致
+        int number = 1; // 和解码一致
         String v1 = "14zRM+40n2UGVx0DlI7hqDFjsxGR6eJsnnxUME5ZDT8="; // 固定值
-        String v3 = "dongchedi"+  System.currentTimeMillis();
+        String v3 = Base64.getEncoder().encodeToString(("dongchedi"+  System.currentTimeMillis()).getBytes(StandardCharsets.UTF_8));
         list.add(vm.getJNIEnv());
         list.add(vm.addLocalObject(vm.resolveClass("com/bdcaijing/tfccsdk/Tfcc").newObject(null)));
 
@@ -99,9 +108,10 @@ public class DCDSign extends AbstractJni {
 //        debugger.addBreakPoint(module.base + 0xa504 + 1);
 
 
-        debugger.addBreakPoint(module.base + 0xae60 + 1);
+//        debugger.addBreakPoint(module.base + 0xae60 + 1);
 
-
+        debugger.addBreakPoint(module.base + 0xae9c + 1);  // 正常解密路径
+//        debugger.addBreakPoint(module.base + 0xae8c + 1);  // 非.......
     }
     public void patchVerify(){
         // 这里不加1 arm (thumb 需要加一)
@@ -126,6 +136,29 @@ public class DCDSign extends AbstractJni {
         }
 
     }
+    public void patchVerifyAdd4(){
+        Pointer pointer = UnidbgPointer.pointer(emulator, module.base + 0xae60);
+        assert pointer != null;
+        byte[] code = pointer.getByteArray(2, 2);
+
+        // 00 00 50 e3 => cmp r0, #0
+        if(!Arrays.equals(code, new byte[]{(byte) 0x50, (byte) 0xe3})){
+            throw new IllegalStateException(Inspector.inspectString(code, "patch32 code="+Arrays.toString(code)));
+        }
+
+        try(Keystone keystone = new Keystone(KeystoneArchitecture.Arm, KeystoneMode.ArmThumb)){
+            // 修改原始汇编
+            KeystoneEncoded keystoneEncoded = keystone.assemble("cmp r0, #1");
+            byte[] patch = keystoneEncoded.getMachineCode();
+            System.out.println("pathch_length:"+patch.length);
+            System.out.println("code_length:"+code.length);
+            if(patch.length != code.length){
+                throw new IllegalStateException(Inspector.inspectString(patch, "patch32 length=" + patch.length));
+            }
+            pointer.write(0, patch, 0, patch.length);
+
+        }
+    }
 
     public static void main(String[] args) {
         // debuge 模式 bt打堆栈  [0x40000000][0x400092b8][libcjtfcc.so][0x092b8]
@@ -137,9 +170,16 @@ public class DCDSign extends AbstractJni {
 //        Logger.getLogger("com.github.unidbg.linux.android.dvm.BaseVM").setLevel(Level.DEBUG);
 //        Logger.getLogger("com.github.unidbg.linux.android.dvm").setLevel(Level.DEBUG);
         DCDSign dcdSign = new DCDSign();
+        String v3 = Base64.getEncoder().encodeToString(("dongchedi"+  System.currentTimeMillis()).getBytes(StandardCharsets.UTF_8));
+        byte[] bytes = Base64.getDecoder().decode(v3);
+        String v4 = new String(bytes, StandardCharsets.UTF_8);
+        System.out.println(v4);
+        dcdSign.patchVerifyAdd4();
+        dcdSign.patchVerify();
+
 //        dcdSign.doDebugger();
-//        dcdSign.patchVerify();
         dcdSign.tfccDecrypt();
+//        dcdSign.tfccEncrypt();
     }
 
 }
