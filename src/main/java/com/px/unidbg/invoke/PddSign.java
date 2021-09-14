@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
 
-@Component
+//@Component
 public class PddSign extends AbstractJni {
     /**
      * Template: 拼多多 5.72.apk  -> getInfo2()
