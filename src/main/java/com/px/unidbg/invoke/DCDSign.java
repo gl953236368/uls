@@ -38,9 +38,13 @@ import java.util.List;
 public class DCDSign extends AbstractJni {
     /***
      * Template: 懂车帝 6.5.1.apk -》tfccEncrypt/tfccDecrypt（解决传值加密）
-     * Content: 环境补充、patch目标指令（也可自己改smali文件）、存在时间校验（加密解密需要先后进行，不然会解密失败）
+     * Content: 环境补充、patch目标指令（也可自己改so文件, 我试了直接改貌似初始化的时候有问题、解密的值为空）【其实可以不用patch】、
+     *          存在时间校验（加密解密需要先后进行，不然会解密失败）
      * Method：js定位方法、consolerdebugger打端点 结合 ida汇编观察
      * Algorithm：暂无
+     * Question: 貌似是运行期间没办法单独调用加密和解密算法，这两个方法需要成对调用（这个时候就不用patch）,
+     *          也就是外部调用的时候需要请求完加密的t_key，就要去请求解密，保证在运行期间加密和解密成对出现
+     *          不然的话会出现解密异常（场景：在一次请求加密完，不去解密，再去请求加密会有问题，强调成对）;
      */
     private final AndroidEmulator emulator;
     private final VM vm;
@@ -216,7 +220,7 @@ public class DCDSign extends AbstractJni {
         return result;
     }
 
-    //    public static void main(String[] args) throws IOException {
+//        public static void main(String[] args) throws IOException {
 //        // debuge 模式 bt打堆栈  [0x40000000][0x400092b8][libcjtfcc.so][0x092b8]
 //        // =》 ida: BLX R2 查看r2寄存器的值 mr2
 ////        Logger.getLogger("com.github.unidbg.linux.ARM32SyscallHandler").setLevel(Level.DEBUG);
@@ -226,8 +230,8 @@ public class DCDSign extends AbstractJni {
 ////        Logger.getLogger("com.github.unidbg.linux.android.dvm.BaseVM").setLevel(Level.DEBUG);
 ////        Logger.getLogger("com.github.unidbg.linux.android.dvm").setLevel(Level.DEBUG);
 //        DCDSign dcdSign = new DCDSign();
-//        dcdSign.patchVerifyAdd4();
-//        dcdSign.patchVerify();
+////        dcdSign.patchVerifyAdd4();
+////        dcdSign.patchVerify();
 //
 ////        dcdSign.doDebugger();
 ////        dcdSign.tfccDecrypt();
