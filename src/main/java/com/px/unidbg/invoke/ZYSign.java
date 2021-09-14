@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+//@Component
 public class ZYSign extends AbstractJni {
     /**
      * Template: 最右 573.apk  -> sign()

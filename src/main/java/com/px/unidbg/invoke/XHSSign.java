@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+//@Component
 public class XHSSign extends AbstractJni{
     /**
      * Template: 小红书 6.97.01.apk  -> okhttp3.interceptor

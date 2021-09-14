@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
-@Service
+//@Service
 public class XHSServiceImpl implements XHSService {
 
     @Autowired
