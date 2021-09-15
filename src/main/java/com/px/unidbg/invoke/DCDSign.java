@@ -38,19 +38,21 @@ import java.util.List;
 public class DCDSign extends AbstractJni {
     /***
      * Template: 懂车帝 6.5.1.apk -》tfccEncrypt/tfccDecrypt（解决传值加密）
-     * Content: 环境补充、patch目标指令（也可自己改so文件, 我试了直接改貌似初始化的时候有问题、解密的值为空）【其实可以不用patch】、
-     *          存在时间校验（加密解密需要先后进行，不然会解密失败）
+     * Content: 环境补充、patch目标指令【其实可以不用patch】（也可自己改so文件, 但是我试了直接改貌似初始化的时候有问题、解密的值为空）、
+     *          成对儿校验（加密解密需要先后进行，只加密不解密，再调用加密会报错；只解密之前没加密过，也会报错）
      * Method：js定位方法、consolerdebugger打端点 结合 ida汇编观察
      * Algorithm：暂无
      * Question: 貌似是运行期间没办法单独调用加密和解密算法，这两个方法需要成对调用（这个时候就不用patch）,
      *          也就是外部调用的时候需要请求完加密的t_key，就要去请求解密，保证在运行期间加密和解密成对出现
      *          不然的话会出现解密异常（场景：在一次请求加密完，不去解密，再去请求加密会有问题，强调成对）;
+     * Referer：https://bbs.pediy.com/thread-269126.htm
      */
     private final AndroidEmulator emulator;
     private final VM vm;
     private final Module module;
     private final String dirPath = "src/main/resources/demo_resources";
-    int mErrorCode;
+    private int mErrorCode;
+    private static int number = 0;  // 模拟引用计数 每次加密一次就加一
 
     DCDSign(){
         emulator = AndroidEmulatorBuilder.for32Bit().setProcessName("com.dcd.sign").build();
@@ -157,6 +159,7 @@ public class DCDSign extends AbstractJni {
     }
 
     public void patchVerifyAdd4(){
+        // patch 掉if 走正确的加密逻辑
         Pointer pointer = UnidbgPointer.pointer(emulator, module.base + 0xae60);
         assert pointer != null;
         byte[] code = pointer.getByteArray(2, 2);
@@ -203,7 +206,7 @@ public class DCDSign extends AbstractJni {
 
     public String runEncrypt(){
         // 调用加密接口
-        int number = 10;
+        testInterface();
         int flag = 1;
         String v1 = "14zRM+40n2UGVx0DlI7hqDFjsxGR6eJsnnxUME5ZDT8=";
         String v2 = Base64.getEncoder().encodeToString(("dongchedi"+  System.currentTimeMillis()).getBytes(StandardCharsets.UTF_8));
@@ -213,11 +216,17 @@ public class DCDSign extends AbstractJni {
 
     public String runDecrypt(String encrypted){
         // 调用揭秘接口
-        int number = 10;
         int flag = 1;
         String v1 = "14zRM+40n2UGVx0DlI7hqDFjsxGR6eJsnnxUME5ZDT8=";
         String result = tfccDecrypt(number, flag, v1, encrypted);
         return result;
+    }
+
+    public  void testInterface(){
+        // 默认给 number+1 模拟引用计数 每次调用一次+1
+        // 用固定值调用第一次出现A开头 第二次再调用就变成B开头了
+        // 感觉总有点怪怪的、因此模拟参数变化确保每次调用A开头
+        number++;
     }
 
 //        public static void main(String[] args) throws IOException {
