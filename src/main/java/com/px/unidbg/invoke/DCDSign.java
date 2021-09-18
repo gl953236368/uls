@@ -39,7 +39,7 @@ public class DCDSign extends AbstractJni {
     /***
      * Template: 懂车帝 6.5.1.apk -》tfccEncrypt/tfccDecrypt（解决传值加密）
      * Content: 环境补充、patch目标指令【其实可以不用patch】（也可自己改so文件, 但是我试了直接改貌似初始化的时候有问题、解密的值为空）、
-     *          成对儿校验（加密解密需要先后进行，只加密不解密，再调用加密会报错；只解密之前没加密过，也会报错）
+     *          成对儿校验（加密解密需要先后进行，只加密不解密，再调用加密会报错；只解密之前没加密过，也会报错）、如何定位参数问题
      * Method：js定位方法、consolerdebugger打端点 结合 ida汇编观察
      * Algorithm：暂无
      * Question: 貌似是运行期间没办法单独调用加密和解密算法，这两个方法需要成对调用（这个时候就不用patch）,
@@ -84,6 +84,17 @@ public class DCDSign extends AbstractJni {
         DvmClass Tfcc = vm.resolveClass("com/bdcaijing/tfccsdk/Tfcc");
         DvmObject<?> TfccObject = Tfcc.newObject(null);
 
+        // ？ 定位第二个参数 为jobject 还是为0（随便填）
+        // 1.定位断点日志输出 0x092b8 =》 发现调用GetObjectClass（env, jobject）object=null
+        // object 为空报错 检查对应的 ida：BLX R2此处调用，根据atpcs env/jobject=>对应存储寄存器为 r0/r1
+        // 向上定位到 jobject/r1的赋值位置 =》 0x000092A8  LDR R1, [R11,#-0x58]
+        // 2. 对赋值位置定位 并debugger =》 *ldr r1, [fp, #-0x58] [0xbffff6e8] => 0x0
+        // 利用tracewrite 对指定地址的调用进行追溯 0xa558
+        // 3. ida跳转地址进行 查看在 A2AC 中调用了此方法
+        // 4. 对照a2ac 即自调用方法 =》 定位为自己穿参问题
+        // 5. 从日志中 搜索a2ac 定位入参 最后确定为jobjetc
+        // =》 dvmClass=class com/bdcaijing/tfccsdk/Tfcc name=tfccDecrypt
+        // 6. 模拟生成此对象 调用
         list.add(vm.getJNIEnv());
         list.add(vm.addLocalObject(TfccObject));
         list.add(number);
