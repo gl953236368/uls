@@ -5,7 +5,7 @@ import com.px.unidbg.service.ZYService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-//@Service
+@Service
 public class ZYServiceImpl implements ZYService {
 
     @Autowired
@@ -17,4 +17,12 @@ public class ZYServiceImpl implements ZYService {
             return zySign.getSign(str1, str2);
         }
     }
+
+    @Override
+    public String decodeAES(String hexStr) {
+        synchronized (this){
+            return zySign.getDecode(hexStr);
+        }
+    }
+
 }
