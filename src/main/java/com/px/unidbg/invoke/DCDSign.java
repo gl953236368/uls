@@ -34,7 +34,7 @@ import java.util.Base64;
 import java.util.List;
 
 
-@Component
+//@Component
 public class DCDSign extends AbstractJni {
     /***
      * Template: 懂车帝 6.5.1.apk -》tfccEncrypt/tfccDecrypt（解决传值加密）
