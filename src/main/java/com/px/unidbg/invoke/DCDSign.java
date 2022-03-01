@@ -34,23 +34,25 @@ import java.util.Base64;
 import java.util.List;
 
 
-@Component
+//@Component
 public class DCDSign extends AbstractJni {
     /***
      * Template: 懂车帝 6.5.1.apk -》tfccEncrypt/tfccDecrypt（解决传值加密）
-     * Content: 环境补充、patch目标指令（也可自己改so文件, 我试了直接改貌似初始化的时候有问题、解密的值为空）【其实可以不用patch】、
-     *          存在时间校验（加密解密需要先后进行，不然会解密失败）
+     * Content: 环境补充、patch目标指令【其实可以不用patch】（也可自己改so文件, 但是我试了直接改貌似初始化的时候有问题、解密的值为空）、
+     *          成对儿校验（加密解密需要先后进行，只加密不解密，再调用加密会报错；只解密之前没加密过，也会报错）、如何定位参数问题
      * Method：js定位方法、consolerdebugger打端点 结合 ida汇编观察
      * Algorithm：暂无
      * Question: 貌似是运行期间没办法单独调用加密和解密算法，这两个方法需要成对调用（这个时候就不用patch）,
      *          也就是外部调用的时候需要请求完加密的t_key，就要去请求解密，保证在运行期间加密和解密成对出现
      *          不然的话会出现解密异常（场景：在一次请求加密完，不去解密，再去请求加密会有问题，强调成对）;
+     * Referer：https://bbs.pediy.com/thread-269126.htm
      */
     private final AndroidEmulator emulator;
     private final VM vm;
     private final Module module;
     private final String dirPath = "src/main/resources/demo_resources";
-    int mErrorCode;
+    private int mErrorCode;
+    private static int number = 0;  // 模拟引用计数 每次加密一次就加一
 
     DCDSign(){
         emulator = AndroidEmulatorBuilder.for32Bit().setProcessName("com.dcd.sign").build();
@@ -82,6 +84,17 @@ public class DCDSign extends AbstractJni {
         DvmClass Tfcc = vm.resolveClass("com/bdcaijing/tfccsdk/Tfcc");
         DvmObject<?> TfccObject = Tfcc.newObject(null);
 
+        // ？ 定位第二个参数 为jobject 还是为0（随便填）
+        // 1.定位断点日志输出 0x092b8 =》 发现调用GetObjectClass（env, jobject）object=null
+        // object 为空报错 检查对应的 ida：BLX R2此处调用，根据atpcs env/jobject=>对应存储寄存器为 r0/r1
+        // 向上定位到 jobject/r1的赋值位置 =》 0x000092A8  LDR R1, [R11,#-0x58]
+        // 2. 对赋值位置定位 并debugger =》 *ldr r1, [fp, #-0x58] [0xbffff6e8] => 0x0
+        // 利用tracewrite 对指定地址的调用进行追溯 0xa558
+        // 3. ida跳转地址进行 查看在 A2AC 中调用了此方法
+        // 4. 对照a2ac 即自调用方法 =》 定位为自己穿参问题
+        // 5. 从日志中 搜索a2ac 定位入参 最后确定为jobjetc
+        // =》 dvmClass=class com/bdcaijing/tfccsdk/Tfcc name=tfccDecrypt
+        // 6. 模拟生成此对象 调用
         list.add(vm.getJNIEnv());
         list.add(vm.addLocalObject(TfccObject));
         list.add(number);
@@ -157,6 +170,7 @@ public class DCDSign extends AbstractJni {
     }
 
     public void patchVerifyAdd4(){
+        // patch 掉if 走正确的加密逻辑
         Pointer pointer = UnidbgPointer.pointer(emulator, module.base + 0xae60);
         assert pointer != null;
         byte[] code = pointer.getByteArray(2, 2);
@@ -203,7 +217,7 @@ public class DCDSign extends AbstractJni {
 
     public String runEncrypt(){
         // 调用加密接口
-        int number = 10;
+        testInterface();
         int flag = 1;
         String v1 = "14zRM+40n2UGVx0DlI7hqDFjsxGR6eJsnnxUME5ZDT8=";
         String v2 = Base64.getEncoder().encodeToString(("dongchedi"+  System.currentTimeMillis()).getBytes(StandardCharsets.UTF_8));
@@ -213,11 +227,17 @@ public class DCDSign extends AbstractJni {
 
     public String runDecrypt(String encrypted){
         // 调用揭秘接口
-        int number = 10;
         int flag = 1;
         String v1 = "14zRM+40n2UGVx0DlI7hqDFjsxGR6eJsnnxUME5ZDT8=";
         String result = tfccDecrypt(number, flag, v1, encrypted);
         return result;
+    }
+
+    public  void testInterface(){
+        // 默认给 number+1 模拟引用计数 每次调用一次+1
+        // 用固定值调用第一次出现A开头 第二次再调用就变成B开头了
+        // 感觉总有点怪怪的、因此模拟参数变化确保每次调用A开头
+        number++;
     }
 
 //        public static void main(String[] args) throws IOException {

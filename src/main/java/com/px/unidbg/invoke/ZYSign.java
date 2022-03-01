@@ -3,6 +3,7 @@ package com.px.unidbg.invoke;
 import com.github.unidbg.AndroidEmulator;
 import com.github.unidbg.Emulator;
 import com.github.unidbg.Module;
+import com.github.unidbg.debugger.BreakPointCallback;
 import com.github.unidbg.hook.hookzz.*;
 import com.github.unidbg.linux.android.AndroidEmulatorBuilder;
 import com.github.unidbg.linux.android.AndroidResolver;
@@ -20,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Component
+@Component
 public class ZYSign extends AbstractJni {
     /**
      * Template: 最右 573.apk  -> sign()
@@ -183,6 +184,101 @@ public class ZYSign extends AbstractJni {
     public String getSign(String str1, String Str2){
         callNativeInit();
         String result = sign(str1, Str2);
+        return result;
+    }
+
+    public static byte hexToByte(String inHex){
+        return (byte) Integer.parseInt(inHex,16);
+    }
+
+
+    public static byte[] hexToBytes(String hex){
+//        hex转byte数组
+        if(hex.length() < 1){
+            return null;
+        }else {
+            byte[] res = new byte[hex.length() / 2];
+            int j = 0;
+            for(int i = 0; i < hex.length(); i+=2){
+                res[j++] = ZYSign.hexToByte(hex.substring(i, i+2));
+            }
+            return res;
+        }
+    }
+
+    public String decodeAES(byte[] b1, Boolean flag){
+        List<Object> list = new ArrayList<>(10);
+        list.add(vm.getJNIEnv());
+        list.add(0);
+        ByteArray byteArray = new ByteArray(vm, b1);
+        list.add(vm.addLocalObject(byteArray));
+        list.add(vm.addLocalObject(vm.resolveClass("java/lang/Boolean").newObject(flag)));
+        Number number = module.callFunction(emulator, 0x4a14d, list.toArray())[0];
+        byte[] res = (byte[]) vm.getObject(number.intValue()).getValue();
+//        System.out.println(new String(res));
+        return new String(res);
+    }
+
+    public void getProtocolKey() {
+        List<Object> list = new ArrayList<>(10);
+        list.add(vm.getJNIEnv());
+        list.add(0);
+        Number number = module.callFunction(emulator, 0x4a419, list.toArray())[0];
+        System.out.println("key:"+vm.getObject(number.intValue()).getValue().toString());
+    }
+
+    public byte[] encodeAES(){
+        List<Object> list = new ArrayList<>(10);
+//        String param1 = "{\"list\":[{\"action\":\"view\",\"otype\":\"partdetail\",\"src\":\"topicdetail\",\"id\":158,\"oid\":119357,\"data\":{\"st\":1638861103388,\"from_page\":\"search\",\"et\":1638861110461,\"source\":\"topicdetail\",\"remain_time_ms\":7072,\"remain_time\":7,\"c_ver\":\"5.7.3\",\"tid\":119357,\"part_id\":158,\"cur_page\":\"topicdetail\",\"log_id\":\"1638861110462_87\"}},{\"action\":\"background\",\"otype\":\"appuse\",\"src\":\"other\",\"data\":{\"st\":1638861100418,\"use_mod\":\"hot\",\"dur\":3,\"from_page\":\"search\",\"pushset\":0,\"et\":1638861103381,\"c_ver\":\"5.7.3\",\"cur_page\":\"topicdetail\",\"log_id\":\"1638861103389_86\"}}],\"h_av\":\"5.7.3\",\"h_dt\":0,\"h_os\":23,\"h_app\":\"zuiyou\",\"h_model\":\"Nexus 6P\",\"h_did\":\"eea5db7016d84e67\",\"h_nt\":1,\"h_m\":255505534,\"h_ch\":\"huawei\",\"h_ts\":1638861111361,\"token\":\"T0K5N6CAhK2BVDkwAV20SmNOfoBPqMGz4kYJiuVJgFNHErXxO07Jr2dpifwTru8X8cIiy1kNq8duoaEG_xJUU67ztVg==\",\"android_id\":\"eea5db7016d84e67\",\"h_ids\":{\"meid\":\"86797902030001\",\"imei2\":\"86797902030001\",\"imei1\":\"86797902030001\"}}";
+        list.add(vm.getJNIEnv());
+        list.add(0);
+//        ByteArray byteArray = new ByteArray(vm, param1.getBytes(StandardCharsets.UTF_8));
+        ByteArray byteArray1 = new ByteArray(vm, ZYSign.hexToBytes("7b226d6964223a32313533323639362c2274223a3130333930353634352c2266696c746572223a22616c6c222c22635f7479706573223a5b312c322c37302c32325d2c22685f6176223a22352e372e33222c22685f6474223a302c22685f6f73223a32332c22685f617070223a227a7569796f75222c22685f6d6f64656c223a224e65787573203650222c22685f646964223a2265656135646237303136643834653637222c22685f6e74223a312c22685f6d223a3235353530353533342c22685f6368223a22687561776569222c22685f7473223a313633393533393731323432342c22746f6b656e223a2254374b624e364341684b324256446b7741563230536d4e4f666f4f45764946684a3045685149437666377149565a4b49657146595f453367744a39593653522d6f787a513155395a556b587674386643477644564e56506f6a35413d3d222c22616e64726f69645f6964223a2265656135646237303136643834653637222c22685f696473223a7b226d656964223a223836373937393032303330303031222c22696d656932223a223836373937393032303330303031222c22696d656931223a223836373937393032303330303031227d7d"));
+        list.add(vm.addLocalObject(byteArray1));
+        Number number = module.callFunction(emulator, 0x4a0b9, list.toArray())[0];
+        byte[] res = (byte[]) vm.getObject(number.intValue()).getValue();
+        return res;
+    }
+
+    public void replaceArgByConsoleDebugger() {
+        emulator.attach().addBreakPoint(module.base + 0x5E1A2, new BreakPointCallback() {
+            @Override
+            public boolean onHit(Emulator<?> emulator, long address) {
+                String fakeInput = "8e 9d ad ad bc bc 4d 4d 4d 6c 6c 7b 7b 7b 8b 8b".replace(" ", "");
+//                 0x403d2700
+
+                // 由于不同接口补充的 地方不一致 所以 地址也不一致
+                emulator.getBackend().mem_write(0x4043e000, hexToBytes(fakeInput));
+                Inspector.inspect(emulator.getBackend().mem_read(0x4043e000, 16), " 0x40542000 修改明文");
+
+//                emulator.getBackend().mem_write(0x40542000, hexToBytes(fakeInput));
+//                Inspector.inspect(emulator.getBackend().mem_read(0x40542000, 16), " 0x40542000 修改明文");
+                return true;
+            }
+        });
+
+        emulator.attach().addBreakPoint(module.base + 0x5E140, new BreakPointCallback() {
+            @Override
+            public boolean onHit(Emulator<?> emulator, long address) {
+                String fakeInput = "c8 10 b6 c5 c5 d5 d5 65 65 75 94 94 a3 a3 b3 b3".replace(" ", "");
+                emulator.getBackend().mem_write(0x403df040, hexToBytes(fakeInput));
+                Inspector.inspect(emulator.getBackend().mem_read(0x403df040, 16), " 0x403df040 iv ");
+
+//                String fakeInputKey = "cf 9d 9d ad ad bc bc cc cc eb 7b 7b 8b 8b 9a 9a".replace(" ", "");
+                String fakeInputKey = "df bd bd cc cc cc dc dc dc 7c 7c 8b 8b 8b 9b 9b".replace(" ", "");
+
+                emulator.getBackend().mem_write(0x403df050, hexToBytes(fakeInputKey));
+                Inspector.inspect(emulator.getBackend().mem_read(0x403df050, 16), " 0x403df050 key ");
+
+                return true;
+            }
+        });
+    }
+    public String getDecode(String hexStr){
+        callNativeInit();
+        replaceArgByConsoleDebugger();
+        byte[] b1 = encodeAES();
+        String result = decodeAES(ZYSign.hexToBytes(hexStr), true);
         return result;
     }
 //    public static void main(String[] args) {
