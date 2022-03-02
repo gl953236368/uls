@@ -13,14 +13,18 @@ import com.github.unidbg.memory.Memory;
 import com.github.unidbg.memory.MemoryBlock;
 import com.github.unidbg.pointer.UnidbgPointer;
 import com.github.unidbg.utils.Inspector;
+import com.px.unidbg.config.UnidbgProperties;
 import com.sun.jna.Pointer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 public class ZYSign extends AbstractJni {
     /**
@@ -33,8 +37,10 @@ public class ZYSign extends AbstractJni {
     private final VM vm;
     private final Module module;
     private final String dirPath = "src/main/resources/demo_resources";
+    private final Boolean isVerbose;
 
-    public ZYSign() {
+    public ZYSign(UnidbgProperties unidbgProperties) {
+        isVerbose = unidbgProperties.isVerbose();
         emulator = AndroidEmulatorBuilder.for32Bit().setProcessName("com.zy.sign").build();     // 创建模拟器
         final Memory memory = emulator.getMemory();  // 模拟器的内存操作接口
         memory.setLibraryResolver(new AndroidResolver(23)); // 设置系统类库解析
@@ -44,7 +50,7 @@ public class ZYSign extends AbstractJni {
         module = dm.getModule(); // 获得本so模块的句柄
 
         vm.setJni(this);
-        vm.setVerbose(false);
+        vm.setVerbose(isVerbose);
         dm.callJNI_OnLoad(emulator);
     }
 
@@ -280,6 +286,13 @@ public class ZYSign extends AbstractJni {
         byte[] b1 = encodeAES();
         String result = decodeAES(ZYSign.hexToBytes(hexStr), true);
         return result;
+    }
+
+    public void destory() throws IOException {
+        emulator.close();
+        if (isVerbose) {
+            log.info("destroy");
+        }
     }
 //    public static void main(String[] args) {
 //        ZYSign zy = new ZYSign();
