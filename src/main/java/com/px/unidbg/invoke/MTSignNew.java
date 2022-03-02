@@ -107,11 +107,11 @@ public class MTSignNew extends AbstractJni implements IOResolver {
         dm.callJNI_OnLoad(emulator);
     }
 
-    public static void main(String[] args) {
-        MTSignNew mtSign = new MTSignNew();
-        mtSign.callInit();
-        mtSign.callTarget();
-    }
+//    public static void main(String[] args) {
+//        MTSignNew mtSign = new MTSignNew();
+//        mtSign.callInit();
+//        mtSign.callTarget();
+//    }
 
     @Override
     public FileResult resolve(Emulator emulator, String pathname, int oflags) {
