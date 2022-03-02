@@ -3,6 +3,7 @@ package com.px.unidbg.controller;
 import com.px.unidbg.invoke.ZYSign;
 import com.px.unidbg.service.ZYService;
 import com.px.unidbg.utils.JavaMd5;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+@Slf4j
 @RequestMapping("/zy")
 @RestController
 public class ZYController {

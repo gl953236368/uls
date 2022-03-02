@@ -1,2 +1,23 @@
 server:
   port: 8080
+
+application:
+  unidbg:
+    dynarmic: false
+    # 是否打印jni调用细节 vm.setVerbose()
+    verbose: false
+    # 是否使用异步多线程，默认值为true
+    async: false
+
+spring:
+  application:
+    name: uls
+  profiles:
+    active: dev
+  task:
+    execution:
+      pool:
+        allow-core-thread-timeout: true
+        core-size: 8
+        keep-alive: 60s
+        max-size: 8
