@@ -12,6 +12,7 @@ application:
 spring:
   application:
     name: uls
+  # profiles: 来指定开发环境 eg. application-{active当前的}.yml
   profiles:
     active: dev
   task:

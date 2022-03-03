@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-@Component
 public class ZYSign extends AbstractJni {
     /**
      * Template: 最右 573.apk  -> sign()
@@ -52,6 +51,7 @@ public class ZYSign extends AbstractJni {
         vm.setJni(this);
         vm.setVerbose(isVerbose);
         dm.callJNI_OnLoad(emulator);
+        log.info("最右module 加载成功");
     }
 
     @Override
@@ -294,6 +294,7 @@ public class ZYSign extends AbstractJni {
             log.info("destroy");
         }
     }
+
 //    public static void main(String[] args) {
 //        ZYSign zy = new ZYSign();
 //        zy.callNativeInit(); // 初始化 函数
