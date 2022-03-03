@@ -15,5 +15,5 @@ public class UnidbgProperties {
     // 是否打印调用信息
     boolean verbose;
     // 是否使用异步多线程
-    boolean async;
+    boolean async = true;
 }

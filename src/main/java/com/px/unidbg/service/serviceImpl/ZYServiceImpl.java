@@ -1,7 +1,6 @@
 package com.px.unidbg.service.serviceImpl;
 
 import com.github.unidbg.worker.Worker;
-import com.github.unidbg.worker.WorkerFactory;
 import com.github.unidbg.worker.WorkerPool;
 import com.github.unidbg.worker.WorkerPoolFactory;
 import com.px.unidbg.config.UnidbgProperties;
@@ -10,19 +9,19 @@ import com.px.unidbg.service.ZYService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 public class ZYServiceImpl implements ZYService, Worker {
 
-    private UnidbgProperties unidbgProperties;
-    private WorkerPool workerPool;
-
-    @Autowired
+    private UnidbgProperties unidbgProperties; // yml里设置的属性
+    private WorkerPool workerPool; // 线程池
     private ZYSign zySign;
 
     public ZYServiceImpl() {
@@ -37,6 +36,7 @@ public class ZYServiceImpl implements ZYService, Worker {
         this.zySign = new ZYSign(this.unidbgProperties);
     }
 
+    @Autowired
     public ZYServiceImpl(UnidbgProperties unidbgProperties,
                          @Value("${spring.task.execution.pool.core-size:4}") int poolSize) {
         // 初始化invoke 服务
@@ -53,34 +53,30 @@ public class ZYServiceImpl implements ZYService, Worker {
 
     }
 
-//    @Override
-//    public String getSign(String str1, String str2) {
-//        synchronized (this){
-//            return zySign.getSign(str1, str2);
-//        }
-//    }
-
+    @Async
     @Override
-    public String getSign(String str1, String str2) {
-        ZYServiceImpl service;
+    public CompletableFuture<String> getSign(String str1, String str2) {
+        ZYServiceImpl worker;
         String sign;
-        if(this.unidbgProperties.isAsync()){
+
+        if(unidbgProperties.isAsync()){
             while (true){
-                if((service = workerPool.borrow(2, TimeUnit.SECONDS)) == null){
+                if((worker = workerPool.borrow(2, TimeUnit.SECONDS)) == null){
                     continue;
                 }
-                sign = service.doWork(str1, str2);
+                sign = worker.doWork(str1, str2);
+                workerPool.release(worker);
                 break;
             }
         }else {
             synchronized (this){
-                return this.doWork(str1, str2);
+                sign = this.doWork(str1, str2);
             }
         }
-        return null;
+        return CompletableFuture.completedFuture(sign);
     }
 
-    private String doWork(String str1, String str2) {
+    public String doWork(String str1, String str2) {
         return zySign.getSign(str1, str2);
     }
 
