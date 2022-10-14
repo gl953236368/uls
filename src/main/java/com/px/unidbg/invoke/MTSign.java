@@ -76,7 +76,7 @@ public class MTSign extends AbstractJni implements IOResolver {
 //        vm.addLocalObject(byteArray);
 //        vm.addLocalObject(dvmInteger);
         list.add(vm.addLocalObject(new ArrayObject(stringObject, byteArray, dvmInteger))); // 完整参数
-        Number number = module.callFunction(emulator, 0x5a38d, list.toArray())[0];
+        Number number = module.callFunction(emulator, 0x5a38d, list.toArray());
         StringObject res = (StringObject) ((DvmObject[])((ArrayObject)vm.getObject(number.intValue())).getValue())[0];
         return res.getValue();
     }

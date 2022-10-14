@@ -66,7 +66,7 @@ public class XCSign extends AbstractJni implements IOResolver {
         ByteArray byteArray = new ByteArray(vm, bytes);
         list.add(vm.addLocalObject(byteArray));
         list.add(vm.addLocalObject(new StringObject(vm, "getdata")));
-        Number  number = module.callFunction(emulator, 0x869d9, list.toArray())[0];
+        Number  number = module.callFunction(emulator, 0x869d9, list.toArray());
         return vm.getObject(number.intValue()).getValue().toString();
     }
 

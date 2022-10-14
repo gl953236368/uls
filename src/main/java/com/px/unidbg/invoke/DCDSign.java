@@ -100,7 +100,7 @@ public class DCDSign extends AbstractJni {
         list.add(flag);
         list.add(vm.addLocalObject(new StringObject(vm, v1)));
         list.add(vm.addLocalObject(new StringObject(vm, v2)));
-        Number number1 = module.callFunction(emulator, 0xa2ac, list.toArray())[0];
+        Number number1 = module.callFunction(emulator, 0xa2ac, list.toArray());
         String reuslt = vm.getObject(number1.intValue()).getValue().toString();
         byte[] bytes = Base64.getDecoder().decode(reuslt);
         String v4 = new String(bytes, StandardCharsets.UTF_8);
@@ -121,7 +121,7 @@ public class DCDSign extends AbstractJni {
         list.add(vm.addLocalObject(new StringObject(vm, v1))); //固定值
         list.add(vm.addLocalObject(new StringObject(vm, v3))); // dongchedi+毫秒时间戳
 
-        Number value = module.callFunction(emulator, 0x8be4, list.toArray())[0];
+        Number value = module.callFunction(emulator, 0x8be4, list.toArray());
         String t_key = vm.getObject(value.intValue()).getValue().toString();
 //        System.out.println("t_key:"+t_key);
         return t_key;

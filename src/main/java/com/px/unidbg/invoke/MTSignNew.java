@@ -137,7 +137,7 @@ public class MTSignNew extends AbstractJni implements IOResolver {
         DvmObject<?> object = vm.resolveClass("java/lang/Object").newObject(null);
         ArrayObject arrayObject = new ArrayObject(object);
         list.add(vm.addLocalObject(arrayObject));
-        Number number =module.callFunction(emulator, 0x41bd, list.toArray())[0];
+        Number number =module.callFunction(emulator, 0x41bd, list.toArray());
 
         ArrayObject arrayObject1 = vm.getObject(number.intValue());
         DvmInteger dvmInteger = (DvmInteger) arrayObject1.getValue()[0];
@@ -154,7 +154,7 @@ public class MTSignNew extends AbstractJni implements IOResolver {
         DvmInteger dvmInteger = DvmInteger.valueOf(vm, 2);
         ArrayObject arrayObject = new ArrayObject(stringObject, byteArray, dvmInteger);
         list.add(vm.addLocalObject(arrayObject));
-        Number number =module.callFunction(emulator, 0x41bd, list.toArray())[0];
+        Number number =module.callFunction(emulator, 0x41bd, list.toArray());
         // 不确定怎么转换结果类型 可以打断点 express 测试 什么类型输出
         ArrayObject arrayObject1 = vm.getObject(number.intValue());
         StringObject stringObject1 = (StringObject) arrayObject1.getValue()[0];

@@ -340,7 +340,7 @@ public class PddSign extends AbstractJni {
         DvmObject<?> context = vm.resolveClass("android/content/Context").newObject(null);
         list.add(vm.addLocalObject(context));
         list.add(0x17AD420321AL); // 高位高地址
-        Number  number = module.callFunction(emulator, 0xe3d5, list.toArray())[0];
+        Number  number = module.callFunction(emulator, 0xe3d5, list.toArray());
         String result = vm.getObject(number.intValue()).getValue().toString();
 //        System.out.println("result:"+result);
         return result;

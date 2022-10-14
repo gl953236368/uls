@@ -182,7 +182,7 @@ public class ZYSign extends AbstractJni {
         list.add(vm.addLocalObject(new StringObject(vm, str1)));
         ByteArray byteArray = new ByteArray(vm, Str2.getBytes(StandardCharsets.UTF_8));
         list.add(vm.addLocalObject(byteArray));
-        Number number = module.callFunction(emulator, 0x4a28d, list.toArray())[0];
+        Number number = module.callFunction(emulator, 0x4a28d, list.toArray());
         String result = vm.getObject(number.intValue()).getValue().toString();
         return result;
     }
@@ -219,7 +219,7 @@ public class ZYSign extends AbstractJni {
         ByteArray byteArray = new ByteArray(vm, b1);
         list.add(vm.addLocalObject(byteArray));
         list.add(vm.addLocalObject(vm.resolveClass("java/lang/Boolean").newObject(flag)));
-        Number number = module.callFunction(emulator, 0x4a14d, list.toArray())[0];
+        Number number = module.callFunction(emulator, 0x4a14d, list.toArray());
         byte[] res = (byte[]) vm.getObject(number.intValue()).getValue();
 //        System.out.println(new String(res));
         return new String(res);
@@ -229,7 +229,7 @@ public class ZYSign extends AbstractJni {
         List<Object> list = new ArrayList<>(10);
         list.add(vm.getJNIEnv());
         list.add(0);
-        Number number = module.callFunction(emulator, 0x4a419, list.toArray())[0];
+        Number number = module.callFunction(emulator, 0x4a419, list.toArray());
         System.out.println("key:"+vm.getObject(number.intValue()).getValue().toString());
     }
 
@@ -241,7 +241,7 @@ public class ZYSign extends AbstractJni {
 //        ByteArray byteArray = new ByteArray(vm, param1.getBytes(StandardCharsets.UTF_8));
         ByteArray byteArray1 = new ByteArray(vm, ZYSign.hexToBytes("7b226d6964223a32313533323639362c2274223a3130333930353634352c2266696c746572223a22616c6c222c22635f7479706573223a5b312c322c37302c32325d2c22685f6176223a22352e372e33222c22685f6474223a302c22685f6f73223a32332c22685f617070223a227a7569796f75222c22685f6d6f64656c223a224e65787573203650222c22685f646964223a2265656135646237303136643834653637222c22685f6e74223a312c22685f6d223a3235353530353533342c22685f6368223a22687561776569222c22685f7473223a313633393533393731323432342c22746f6b656e223a2254374b624e364341684b324256446b7741563230536d4e4f666f4f45764946684a3045685149437666377149565a4b49657146595f453367744a39593653522d6f787a513155395a556b587674386643477644564e56506f6a35413d3d222c22616e64726f69645f6964223a2265656135646237303136643834653637222c22685f696473223a7b226d656964223a223836373937393032303330303031222c22696d656932223a223836373937393032303330303031222c22696d656931223a223836373937393032303330303031227d7d"));
         list.add(vm.addLocalObject(byteArray1));
-        Number number = module.callFunction(emulator, 0x4a0b9, list.toArray())[0];
+        Number number = module.callFunction(emulator, 0x4a0b9, list.toArray());
         byte[] res = (byte[]) vm.getObject(number.intValue()).getValue();
         return res;
     }
