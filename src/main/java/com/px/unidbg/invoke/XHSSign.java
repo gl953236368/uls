@@ -72,7 +72,7 @@ public class XHSSign extends AbstractJni{
         objectList.add(vm.getJNIEnv());
         objectList.add(0);
         objectList.add(vm.addLocalObject(new StringObject(vm, "main")));
-        Number number = module.callFunction(androidEmulator, 0x6b801, objectList.toArray())[0];
+        Number number = module.callFunction(androidEmulator, 0x6b801, objectList.toArray());
         return number.longValue();
     }
 

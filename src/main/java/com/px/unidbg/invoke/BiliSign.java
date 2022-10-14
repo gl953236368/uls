@@ -67,7 +67,7 @@ public class BiliSign extends AbstractJni {
         DvmClass abstractClazz = vm.resolveClass("java/util/AbstractMap", clazz); // 第一个为superClass 第二个为接口class
         DvmObject<?> dvmObject = vm.resolveClass("java/util/TreeMap", abstractClazz).newObject(treeMap);
         list.add(vm.addLocalObject(dvmObject));
-        Number number = module.callFunction(emulator, 0x1c97, list.toArray())[0];
+        Number number = module.callFunction(emulator, 0x1c97, list.toArray());
         DvmObject result = vm.getObject(number.intValue()); // 返回的是一个对象
         SignedQuery signedQuery = (SignedQuery) result.getValue();
         return signedQuery.b;

@@ -81,7 +81,7 @@ public class QXSSign extends AbstractJni {
         list.add(vm.addLocalObject(dvmObject));
         list.add(vm.addLocalObject(new StringObject(vm , content)));
         // 关于方法的位置 jni初始化 无地址 -》在function id搜不到 -》 exports里观察【一般是存在保护机制 没办法直接f5反编译】
-        Number number = module.callFunction(emulator, 0xA944 + 1, list.toArray())[0]; // +1 thumb模式 arm不用加
+        Number number = module.callFunction(emulator, 0xA944 + 1, list.toArray()); // +1 thumb模式 arm不用加
         String result = vm.getObject(number.intValue()).getValue().toString();
         return result;
     }
