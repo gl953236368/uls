@@ -18,17 +18,19 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-public class ZYServiceImpl implements ZYService, Worker {
+public class ZYServiceImpl extends Worker implements ZYService {
 
     private UnidbgProperties unidbgProperties; // yml里设置的属性
     private WorkerPool workerPool; // 线程池
     private ZYSign zySign;
 
-    public ZYServiceImpl() {
+    public ZYServiceImpl(WorkerPool workerPool) {
+        super(workerPool);
 
     }
-    public ZYServiceImpl(Boolean dynarmic, Boolean verbose) {
+    public ZYServiceImpl(Boolean dynarmic, Boolean verbose, WorkerPool workerPool) {
         // 开启动态引擎
+        super(workerPool);
         this.unidbgProperties = new UnidbgProperties();
         this.unidbgProperties.setVerbose(verbose);
         this.unidbgProperties.setAsync(dynarmic);
@@ -39,11 +41,12 @@ public class ZYServiceImpl implements ZYService, Worker {
     @Autowired
     public ZYServiceImpl(UnidbgProperties unidbgProperties,
                          @Value("${spring.task.execution.pool.core-size:4}") int poolSize) {
+        super(null);
         // 初始化invoke 服务
         this.unidbgProperties = unidbgProperties;
         if(this.unidbgProperties.isAsync()){
-            workerPool = WorkerPoolFactory.create(()->
-                            new ZYServiceImpl(unidbgProperties.isDynarmic(), unidbgProperties.isVerbose()),
+            workerPool = WorkerPoolFactory.create((workerPool)->
+                            new ZYServiceImpl(unidbgProperties.isDynarmic(), unidbgProperties.isVerbose(), workerPool),
                     Math.max(poolSize, 4));
             log.info("线程池数量：{}", Math.max(poolSize, 4));
         }else {
@@ -88,8 +91,12 @@ public class ZYServiceImpl implements ZYService, Worker {
     }
 
     @Override
-    public void close() throws IOException {
-        zySign.destory();
+    public void destroy() {
+        try {
+            zySign.destory();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         log.info("Destroy: {}", zySign);
     }
 }

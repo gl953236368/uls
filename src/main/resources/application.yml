@@ -3,6 +3,7 @@ server:
 
 application:
   unidbg:
+    # 是否使用 DynarmicFactory
     dynarmic: false
     # 是否打印jni调用细节 vm.setVerbose()
     verbose: false

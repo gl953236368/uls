@@ -13,6 +13,7 @@ import com.github.unidbg.memory.Memory;
 import com.github.unidbg.memory.MemoryBlock;
 import com.github.unidbg.pointer.UnidbgPointer;
 import com.github.unidbg.utils.Inspector;
+import com.github.unidbg.virtualmodule.android.AndroidModule;
 import com.px.unidbg.config.UnidbgProperties;
 import com.sun.jna.Pointer;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,7 @@ public class ZYSign extends AbstractJni {
         final Memory memory = emulator.getMemory();  // 模拟器的内存操作接口
         memory.setLibraryResolver(new AndroidResolver(23)); // 设置系统类库解析
         vm = emulator.createDalvikVM(new File(dirPath + "/zy/apks/zy573.apk")); // 依托原apk 创建android虚拟
+        new AndroidModule(emulator, vm).register(memory); // 补充依赖
         // 这里设置 不加载 so 会出现乱码的情况 shift+f7观察 init_array中 存在大量函数 推测在此存在 加解密过程
         DalvikModule dm = vm.loadLibrary(new File(dirPath + "/zy/libnet_crypto.so"), true); // 加载so到虚拟内存里
         module = dm.getModule(); // 获得本so模块的句柄
@@ -296,10 +298,10 @@ public class ZYSign extends AbstractJni {
     }
 
 //    public static void main(String[] args) {
-//        ZYSign zy = new ZYSign();
+//        ZYSign zy = new ZYSign(new UnidbgProperties());
 //        zy.callNativeInit(); // 初始化 函数
-////        zy.hook65540(); // hook nativve 方法 被动
-////        zy.callMd5();
-//        System.out.println(zy.sign()); // 获得sign值
+//        zy.hook65540(); // hook nativve 方法 被动
+//        zy.callMd5();
+//        System.out.println(zy.sign("123", "abcdefg")); // 获得sign值
 //    }
 }
